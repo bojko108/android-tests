@@ -70,6 +70,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
     private void startGPS() {
         registerReceiver(receiver, new IntentFilter(DeviceLocation.DEVICE_LOCATION));
         Intent intent = new Intent(getApplicationContext(), DeviceLocation.class);
+        intent.putExtra(DeviceLocation.LOCATION_INTERVAL, 10000);
+        intent.putExtra(DeviceLocation.LOCATION_DISTANCE, 10f);
         startService(intent);
     }
 

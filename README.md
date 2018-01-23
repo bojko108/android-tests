@@ -54,6 +54,8 @@ protected void onPause() {
 private void startGPS() {
     registerReceiver(receiver, new IntentFilter(DeviceLocation.DEVICE_LOCATION));
     Intent intent = new Intent(getApplicationContext(), DeviceLocation.class);
+    intent.putExtra(DeviceLocation.LOCATION_INTERVAL, 10000);
+    intent.putExtra(DeviceLocation.LOCATION_DISTANCE, 50f);
     startService(intent);
 }
 
@@ -62,7 +64,14 @@ private void stopGPS() {
     stopService(new Intent(this, DeviceLocation.class));
 }
 ```
-4. Add `BroadcastReceiver` to `MainActivity`. In `onReceive()` you can get device location information: `latitude`, `longitude`, `altitude` and `accuracy`. 
+4. You can set minimum location interval in miliseconds and minimum location distance in meters:
+```java
+Intent intent = new Intent(getApplicationContext(), DeviceLocation.class);
+intent.putExtra(DeviceLocation.LOCATION_INTERVAL, 10000);   // 10 seconds
+intent.putExtra(DeviceLocation.LOCATION_DISTANCE, 50f);     // 50 meters
+startService(intent);
+```
+5. Add `BroadcastReceiver` to `MainActivity`. In `onReceive()` you can get device location information: `latitude`, `longitude`, `altitude` and `accuracy`. 
 ```java
 private BroadcastReceiver receiver = new BroadcastReceiver() {
     @Override

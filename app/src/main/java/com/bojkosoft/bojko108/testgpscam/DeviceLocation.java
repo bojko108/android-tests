@@ -2,6 +2,7 @@ package com.bojkosoft.bojko108.testgpscam;
 
 import android.Manifest;
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
@@ -15,13 +16,21 @@ import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 
+import java.text.DecimalFormat;
+
 public class DeviceLocation extends Service implements LocationListener {
 
     public static final String DEVICE_LOCATION = "com.bojkosoft.devicelocation";
+    public static final String LOCATION_INTERVAL = "location_interval";
+    public static final String LOCATION_DISTANCE = "location_distance";
 
     private LocationManager mLocationManager = null;
-    private static final int LOCATION_INTERVAL = 1000;
-    private static final float LOCATION_DISTANCE = 0f;
+    private int mLocationInterval = 1000;
+    private float mLocationDistance = 0f;
+
+    private static final int NOTIFICATION_ID = 1886;
+    private NotificationManager mNotificationManager;
+    private Notification.Builder mNotificationBuilder;
 
     @Nullable
     @Override
@@ -32,9 +41,22 @@ public class DeviceLocation extends Service implements LocationListener {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
+
+        this.mLocationInterval = intent.getIntExtra(LOCATION_INTERVAL, this.mLocationInterval);
+        this.mLocationDistance = intent.getFloatExtra(LOCATION_DISTANCE, this.mLocationDistance);
+
         this.initializeLocationManager();
-        //startForeground(108, this.createNotification(intent));
+
+        this.initializeNotification();
+
+        startForeground(NOTIFICATION_ID, this.mNotificationBuilder.getNotification());
+
         return START_STICKY;
+    }
+
+    private void initializeNotification() {
+        this.mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        this.mNotificationBuilder = this.createNotification("Test GPS & Camera", "wtf");
     }
 
     private void initializeLocationManager() {
@@ -43,8 +65,8 @@ public class DeviceLocation extends Service implements LocationListener {
             if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 return;
             }
-            this.mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, this.LOCATION_INTERVAL, this.LOCATION_DISTANCE, this);
-            this.mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, this.LOCATION_INTERVAL, this.LOCATION_DISTANCE, this);
+            this.mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, this.mLocationInterval, this.mLocationDistance, this);
+            this.mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, this.mLocationInterval, this.mLocationDistance, this);
         }
     }
 
@@ -52,11 +74,13 @@ public class DeviceLocation extends Service implements LocationListener {
     public void onDestroy() {
         super.onDestroy();
         this.mLocationManager.removeUpdates(this);
-        //stopForeground(true);
+        stopForeground(true);
     }
 
     @Override
     public void onLocationChanged(Location location) {
+        DecimalFormat f = new DecimalFormat("##.00000");
+        this.updateNotification("Test GPS & Camera", "lat: " + f.format(location.getLatitude()) + "; lon: " + f.format(location.getLongitude()));
         this.broadcastDeviceLocation(location);
     }
 
@@ -84,18 +108,22 @@ public class DeviceLocation extends Service implements LocationListener {
         sendBroadcast(intent);
     }
 
-    private Notification createNotification(Intent intent) {
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+    private void updateNotification(String title, String text) {
+        if (this.mNotificationBuilder != null) {
+            this.mNotificationBuilder.setContentTitle(title);
+            this.mNotificationBuilder.setContentText(text);
 
+            this.mNotificationManager.notify(NOTIFICATION_ID, this.mNotificationBuilder.getNotification());
+        }
+    }
+
+    private Notification.Builder createNotification(String title, String text) {
         Notification.Builder builder = new Notification.Builder(this);
         builder.setOngoing(true)
-                .setContentTitle(getResources().getString(R.string.app_name))
-                .setStyle(new Notification.InboxStyle()
-                        .addLine("listening for GPS ...")
-                        .setBigContentTitle(getResources().getString(R.string.app_name)))
-                .setSmallIcon(android.R.drawable.sym_def_app_icon)
-                .setContentIntent(pendingIntent);
+                .setSmallIcon(R.drawable.ic_stat_name)
+                .setContentTitle(title)
+                .setContentText(text);
 
-        return builder.build();
+        return builder;
     }
 }
