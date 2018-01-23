@@ -7,14 +7,20 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
+import android.util.DisplayMetrics;
 import android.view.Surface;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 public class MainActivity extends Activity implements View.OnClickListener, SensorEventListener {
@@ -49,6 +55,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
 
         this.mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         this.mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        this.mCompassDial = (ImageView) findViewById(R.id.compassDial);
+        this.mCompassNiddle = (ImageView) findViewById(R.id.compassNiddle);
 
         findViewById(R.id.buttonCamera).setOnClickListener(this);
     }
@@ -114,6 +122,8 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
 
     private SensorManager mSensorManager;
     private Sensor mMagnetometer;
+    private ImageView mCompassDial;
+    private ImageView mCompassNiddle;
 
     @Override
     public void onSensorChanged(SensorEvent event) {
@@ -165,6 +175,13 @@ public class MainActivity extends Activity implements View.OnClickListener, Sens
         double azimuth = Math.toDegrees(orientation[0]);
         if (azimuth < 0) azimuth = 360 - (azimuth * -1);
         ((TextView) findViewById(R.id.textAzimuth)).setText(Long.toString(Math.round(azimuth)));
+
+        this.rotateImageView((float) azimuth);
+    }
+
+    private void rotateImageView(float rotate) {
+        this.mCompassDial.setRotation(360 - rotate);
+        //this.mCompassNiddle.setRotation(360 - rotate);
     }
 
     private boolean isDeviceFlat(float[] values) {
