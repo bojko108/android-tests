@@ -105,6 +105,41 @@ Intent camera = new Intent(getApplicationContext(), CameraPreviewActivity.class)
 startActivity(camera);
 ```
 4. Whatch out for `private static Size chooseOptimalSize(Size[], int, int, int, int, Size)`. In it we can define the max preview size according to screen size! If not used as a full screen activity, you must update `maxHeight` and `maxWidth`.
+5. To calculate horizontal and vertical field of view you can use:
+```java
+private float getHorizontalFieldOfView(CameraCharacteristics info) {
+    SizeF sensorSize = info.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+    float[] focalLengths = info.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+
+    if (focalLengths != null && focalLengths.length > 0) {
+        return (float) (2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
+    }
+
+    return 1.1f;
+}
+
+private float getVerticalFieldOfView(CameraCharacteristics info) {
+    SizeF sensorSize = info.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+    float[] focalLengths = info.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+
+    if (focalLengths != null && focalLengths.length > 0) {
+        return (float) (2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
+    }
+
+    return 1.1f;
+}
+
+...
+
+int orientation = getResources().getConfiguration().orientation;
+if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+    this.mVerticalFOV = Math.toDegrees(this.getVerticalFieldOfView(characteristics));
+    this.mHorizontalFOV = Math.toDegrees(this.getHorizontalFieldOfView(characteristics));
+} else {
+    this.mVerticalFOV = Math.toDegrees(this.getHorizontalFieldOfView(characteristics));
+    this.mHorizontalFOV = Math.toDegrees(this.getVerticalFieldOfView(characteristics));
+}
+```
 # Add confirmation dialog
 
 # Add error dialog

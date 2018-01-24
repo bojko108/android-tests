@@ -14,4 +14,10 @@ public class CameraPreviewActivity extends Activity {
                 .replace(R.id.container, CameraFragment.newInstance())
                 .commit();
     }
+
+    protected void onResume(){
+        super.onResume();
+
+        getFragmentManager().findFragmentById(R.id.container);
+    }
 }

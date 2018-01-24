@@ -43,15 +43,17 @@ public class DeviceLocation extends Service implements LocationListener {
     public int onStartCommand(Intent intent, int flags, int startId) {
         super.onStartCommand(intent, flags, startId);
 
-        this.mLocationInterval = intent.getIntExtra(LOCATION_INTERVAL, this.mLocationInterval);
-        this.mLocationDistance = intent.getFloatExtra(LOCATION_DISTANCE, this.mLocationDistance);
+        if (intent != null) {
+            this.mLocationInterval = intent.getIntExtra(LOCATION_INTERVAL, this.mLocationInterval);
+            this.mLocationDistance = intent.getFloatExtra(LOCATION_DISTANCE, this.mLocationDistance);
+
+            if (intent.getBooleanExtra(CREATE_NOTIFICATION, true)) {
+                this.initializeNotification();
+                startForeground(NOTIFICATION_ID, this.mNotificationBuilder.build());
+            }
+        }
 
         this.initializeLocationManager();
-
-        if (intent.getBooleanExtra(CREATE_NOTIFICATION, true)) {
-            this.initializeNotification();
-            startForeground(NOTIFICATION_ID, this.mNotificationBuilder.build());
-        }
 
         return START_STICKY;
     }

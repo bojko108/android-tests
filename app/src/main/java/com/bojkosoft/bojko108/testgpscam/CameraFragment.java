@@ -26,6 +26,7 @@ import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 import android.util.Size;
+import android.util.SizeF;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.TextureView;
@@ -42,6 +43,11 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 public class CameraFragment extends android.app.Fragment {
+
+
+    private double mHorizontalFOV = 0.0;
+    private double mVerticalFOV = 0.0;
+
 
     /**
      * Camera state: Showing camera preview.
@@ -470,8 +476,14 @@ public class CameraFragment extends android.app.Fragment {
                 int orientation = getResources().getConfiguration().orientation;
                 if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
                     mTextureView.setAspectRatio(mPreviewSize.getWidth(), mPreviewSize.getHeight());
+
+                    this.mVerticalFOV = Math.toDegrees(this.getVerticalFieldOfView(characteristics));
+                    this.mHorizontalFOV = Math.toDegrees(this.getHorizontalFieldOfView(characteristics));
                 } else {
                     mTextureView.setAspectRatio(mPreviewSize.getHeight(), mPreviewSize.getWidth());
+
+                    this.mVerticalFOV = Math.toDegrees(this.getHorizontalFieldOfView(characteristics));
+                    this.mHorizontalFOV = Math.toDegrees(this.getVerticalFieldOfView(characteristics));
                 }
 
                 // Check if the flash is supported.
@@ -672,5 +684,28 @@ public class CameraFragment extends android.app.Fragment {
             return Long.signum((long) lhs.getWidth() * lhs.getHeight() -
                     (long) rhs.getWidth() * rhs.getHeight());
         }
+    }
+
+
+    private float getHorizontalFieldOfView(CameraCharacteristics info) {
+        SizeF sensorSize = info.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+        float[] focalLengths = info.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+
+        if (focalLengths != null && focalLengths.length > 0) {
+            return (float) (2.0f * Math.atan(sensorSize.getWidth() / (2.0f * focalLengths[0])));
+        }
+
+        return 1.1f;
+    }
+
+    private float getVerticalFieldOfView(CameraCharacteristics info) {
+        SizeF sensorSize = info.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
+        float[] focalLengths = info.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS);
+
+        if (focalLengths != null && focalLengths.length > 0) {
+            return (float) (2.0f * Math.atan(sensorSize.getHeight() / (2.0f * focalLengths[0])));
+        }
+
+        return 1.1f;
     }
 }
