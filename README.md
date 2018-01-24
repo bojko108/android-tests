@@ -5,6 +5,7 @@
 * [How to work with Camera](#how-to-work-with-camera)
 * [Add confirmation dialog](#add-confirmation-dialog)
 * [Add error dialog](#add-error-dialog)
+* [Select directory](#select-directory)
 
 # How to work with Compass
 1. Add `DeviceCompass` class to the activity:
@@ -64,11 +65,15 @@ private void stopGPS() {
     stopService(new Intent(this, DeviceLocation.class));
 }
 ```
-4. You can set minimum location interval in miliseconds and minimum location distance in meters:
+4. You can set some of the parameters when starting the service:
+- minimum location interval (in miliseconds), default is `10000`;
+- minimum location distance (in meters), default is `0f`;
+- to create a notification or not, default is `true`.
 ```java
 Intent intent = new Intent(getApplicationContext(), DeviceLocation.class);
-intent.putExtra(DeviceLocation.LOCATION_INTERVAL, 10000);   // 10 seconds
-intent.putExtra(DeviceLocation.LOCATION_DISTANCE, 50f);     // 50 meters
+intent.putExtra(DeviceLocation.LOCATION_INTERVAL, 1000);   // 1 second
+intent.putExtra(DeviceLocation.LOCATION_DISTANCE, 50f);    // 50 meters
+intent.putExtra(DeviceLocation.CREATE_NOTIFICATION, false); // do not create a notification
 startService(intent);
 ```
 5. Add `BroadcastReceiver` to `MainActivity`. In `onReceive()` you can get device location information: `latitude`, `longitude`, `altitude` and `accuracy`. 
@@ -103,3 +108,21 @@ startActivity(camera);
 # Add confirmation dialog
 
 # Add error dialog
+
+# Select directory
+```java
+private void chooseDirectory() {
+    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+    intent.addCategory(Intent.CATEGORY_DEFAULT);
+    if (intent.resolveActivity(getPackageManager()) != null) {
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+}
+
+@Override
+protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+        Uri uri = data.getData();   // get selected directory URI
+    }
+}
+```

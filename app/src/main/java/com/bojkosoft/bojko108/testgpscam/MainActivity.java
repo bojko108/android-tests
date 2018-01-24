@@ -72,6 +72,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
         Intent intent = new Intent(getApplicationContext(), DeviceLocation.class);
         intent.putExtra(DeviceLocation.LOCATION_INTERVAL, 10000);
         intent.putExtra(DeviceLocation.LOCATION_DISTANCE, 10f);
+        //intent.putExtra(DeviceLocation.CREATE_NOTIFICATION,false);
         startService(intent);
     }
 
@@ -81,9 +82,15 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
     }
 
     private void startCamera() {
+        //ErrorDialog.newInstance("asdsad").show(getFragmentManager(),"a");
         Intent camera = new Intent(getApplicationContext(), CameraPreviewActivity.class);
         startActivity(camera);
-        //ErrorDialog.newInstance("error !!!").show(getFragmentManager., "wtf");
+    }
+
+    @Override
+    public void onAzimuthChanged(double azimuth) {
+        ((TextView) findViewById(R.id.textAzimuth)).setText(Long.toString(Math.round(azimuth)));
+        this.mCompassDial.setRotation((float) (360 - azimuth));
     }
 
     @Override
@@ -115,11 +122,5 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
                     REQUEST_PERMISSION
             );
         }
-    }
-
-    @Override
-    public void onAzimuthChanged(double azimuth) {
-        ((TextView) findViewById(R.id.textAzimuth)).setText(Long.toString(Math.round(azimuth)));
-        this.mCompassDial.setRotation((float) (360 - azimuth));
     }
 }

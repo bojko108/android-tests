@@ -23,6 +23,7 @@ public class DeviceLocation extends Service implements LocationListener {
     public static final String DEVICE_LOCATION = "com.bojkosoft.devicelocation";
     public static final String LOCATION_INTERVAL = "location_interval";
     public static final String LOCATION_DISTANCE = "location_distance";
+    public static final String CREATE_NOTIFICATION = "create_notification";
 
     private LocationManager mLocationManager = null;
     private int mLocationInterval = 1000;
@@ -47,16 +48,17 @@ public class DeviceLocation extends Service implements LocationListener {
 
         this.initializeLocationManager();
 
-        this.initializeNotification();
-
-        startForeground(NOTIFICATION_ID, this.mNotificationBuilder.getNotification());
+        if (intent.getBooleanExtra(CREATE_NOTIFICATION, true)) {
+            this.initializeNotification();
+            startForeground(NOTIFICATION_ID, this.mNotificationBuilder.build());
+        }
 
         return START_STICKY;
     }
 
     private void initializeNotification() {
         this.mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        this.mNotificationBuilder = this.createNotification("Test GPS & Camera", "wtf");
+        this.mNotificationBuilder = this.createNotification("GPS", null);
     }
 
     private void initializeLocationManager() {
@@ -79,8 +81,8 @@ public class DeviceLocation extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        DecimalFormat f = new DecimalFormat("##.00000");
-        this.updateNotification("Test GPS & Camera", "lat: " + f.format(location.getLatitude()) + "; lon: " + f.format(location.getLongitude()));
+        DecimalFormat f = new DecimalFormat("##.000000");
+        this.updateNotification("lat: " + f.format(location.getLatitude()) + "; lon: " + f.format(location.getLongitude()));
         this.broadcastDeviceLocation(location);
     }
 
@@ -108,12 +110,11 @@ public class DeviceLocation extends Service implements LocationListener {
         sendBroadcast(intent);
     }
 
-    private void updateNotification(String title, String text) {
+    private void updateNotification(String text) {
         if (this.mNotificationBuilder != null) {
-            this.mNotificationBuilder.setContentTitle(title);
             this.mNotificationBuilder.setContentText(text);
 
-            this.mNotificationManager.notify(NOTIFICATION_ID, this.mNotificationBuilder.getNotification());
+            this.mNotificationManager.notify(NOTIFICATION_ID, this.mNotificationBuilder.build());
         }
     }
 
