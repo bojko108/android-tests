@@ -23,8 +23,8 @@ public class DeviceCompass implements SensorEventListener {
 
     public DeviceCompass(Context context) {
         this.mContext = context;
-        this.mSensorManager = (SensorManager) this.mContext.getSystemService(this.mContext.SENSOR_SERVICE);
-        this.mMagnetometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+        this.mSensorManager = (SensorManager) this.mContext.getSystemService(Context.SENSOR_SERVICE);
+        this.mMagnetometer = this.mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
     }
 
     public void startListening() {
@@ -35,7 +35,7 @@ public class DeviceCompass implements SensorEventListener {
         this.mSensorManager.unregisterListener(this);
     }
 
-    public void setOnAzimuthChangedEventListener(OnAzimuthChangedEventListener eventListener) {
+    public void setOnOrientationChangedEventListener(OnAzimuthChangedEventListener eventListener) {
         this.mOnAzimuthChangedEventListener = eventListener;
     }
 
@@ -89,10 +89,13 @@ public class DeviceCompass implements SensorEventListener {
         //
         // The range of values is -π to π.
 
-        double azimuth = Math.toDegrees(orientation[0]);
-        if (azimuth < 0) azimuth = 360 - (azimuth * -1);
+        double azimuth = (Math.toDegrees(orientation[0]) + 360) % 360;
+        //if (azimuth < 0) azimuth = 360 - (azimuth * -1);
 
-        // broadcast azimuth value
+        double pitch = Math.toDegrees(orientation[1]);
+        double roll = Math.toDegrees(orientation[2]);
+
+        // broadcast orientation values
         if (this.mOnAzimuthChangedEventListener != null) {
             this.mOnAzimuthChangedEventListener.onAzimuthChanged(azimuth);
         }

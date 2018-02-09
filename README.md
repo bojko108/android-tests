@@ -6,14 +6,18 @@
 * [Add confirmation dialog](#add-confirmation-dialog)
 * [Add error dialog](#add-error-dialog)
 * [Select directory](#select-directory)
+* [Add line in view](#add-line-in-view)
 
 # How to work with Compass
-1. Add `DeviceCompass` class to the activity:
+1. Add `DeviceCompass` class to the activity. The default value for `azimuthStep` is 0 degrees. If set, the azimuth will be returned only if the change
+is bigger than the azimuth step:
 ```java
 private DeviceCompass deviceCompass;
 ...
 // pass Context
 this.deviceCompass = new DeviceCompass(this);
+// you can set the azimuth step in degrees:
+this.deviceCompass.setAzimuthStep(5);
 ```
 2. Implement `DeviceCompass.OnAzimuthChangedEventListener` listener in the activity:
 ```java
@@ -91,6 +95,26 @@ private BroadcastReceiver receiver = new BroadcastReceiver() {
     }
 };
 ```
+6. Check GPS permissions:
+3. Check camera permissions:
+```java
+private static final int REQUEST_PERMISSION = 1;
+
+private void checkGPSPermissions() {
+
+    //TODO: ask user if he want to turnon the GPS...
+
+    int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+
+    if (permission != PackageManager.PERMISSION_GRANTED) {
+        // ask user for permissions
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                REQUEST_PERMISSION
+        );
+    }
+}
 # How to work with Camera
 1. Add permissions to android manifest:
 ```xml
@@ -98,14 +122,51 @@ private BroadcastReceiver receiver = new BroadcastReceiver() {
 
 <uses-feature android:name="android.hardware.camera2.full" />
 ```
-2. Add `CameraPreviewActivity` activity and `CameraFragment` fragment. You'll also need `layout/activity_camera` and `layout/fragment_camera` xml files.
-3. You can call camera activity from the main activity using:
+2. Add `CameraPreviewActivity` activity, `CameraFragment` fragment and `AutoFitTextureView` class. You'll also need `layout/activity_camera` and `layout/fragment_camera` xml files.
+- you can add only `CameraFragment` and just add a fragment in your activity:
+```xml
+<fragment android:name="com.bojkosoft.bojko108.livegeolocator.CameraFragment"
+    android:id="@+id/cameraPreview"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" />
+```
+```java
+@Override
+protected void onResume() {
+    super.onResume();
+
+    if (this.mCameraFragment == null) {
+        this.mCameraFragment = (CameraFragment) getFragmentManager().findFragmentById(R.id.cameraPreview);
+        
+        // work with camera fragment
+    }
+}
+```
+3. Check camera permissions:
+```java
+private static final int REQUEST_PERMISSION = 1;
+
+private void checkCameraPermissions() {
+    int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+
+    if (permission != PackageManager.PERMISSION_GRANTED) {
+        // ask user for permissions
+        ActivityCompat.requestPermissions(
+                this,
+                new String[]{Manifest.permission.CAMERA},
+                REQUEST_PERMISSION
+        );
+    }
+}
+```
+4. Using the camera preview:
+- you can call camera from the main activity using:
 ```java
 Intent camera = new Intent(getApplicationContext(), CameraPreviewActivity.class);
 startActivity(camera);
 ```
-4. Whatch out for `private static Size chooseOptimalSize(Size[], int, int, int, int, Size)`. In it we can define the max preview size according to screen size! If not used as a full screen activity, you must update `maxHeight` and `maxWidth`.
-5. To calculate horizontal and vertical field of view you can use:
+5. Whatch out for `private static Size chooseOptimalSize(Size[], int, int, int, int, Size)`. In it we can define the max preview size according to screen size! If not used as a full screen activity, you must update `maxHeight` and `maxWidth`.
+6. To calculate horizontal and vertical field of view you can use:
 ```java
 private float getHorizontalFieldOfView(CameraCharacteristics info) {
     SizeF sensorSize = info.get(CameraCharacteristics.SENSOR_INFO_PHYSICAL_SIZE);
@@ -160,4 +221,30 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Uri uri = data.getData();   // get selected directory URI
     }
 }
+```
+
+# Add line in view
+- For a verical line:
+```xml
+<View
+    android:id="@+id/targetLine"
+    android:layout_width="1dp"
+    android:layout_height="fill_parent"
+    android:layout_marginBottom="50dp"
+    android:background="@color/primaryColor"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent" />
+```
+- For a horizontal line:
+```xml
+<View
+    android:id="@+id/targetLine"
+    android:layout_width="fill_parent"
+    android:layout_height="1dp"
+    android:layout_marginBottom="50dp"
+    android:background="@color/primaryColor"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent" />
 ```

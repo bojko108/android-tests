@@ -33,13 +33,20 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                ((TextView) findViewById(R.id.textLatitude)).setText(bundle.get("latitude").toString());
-                ((TextView) findViewById(R.id.textLongitude)).setText(bundle.get("longitude").toString());
+                //((TextView) findViewById(R.id.textLatitude)).setText(bundle.get("latitude").toString());
+                //((TextView) findViewById(R.id.textLongitude)).setText(bundle.get("longitude").toString());
                 ((TextView) findViewById(R.id.textAltitude)).setText(bundle.get("altitude").toString());
                 ((TextView) findViewById(R.id.textAccuracy)).setText(bundle.get("accuracy").toString());
             }
         }
     };
+
+
+    @Override
+    public void onAzimuthChanged(double azimuth) {
+        ((TextView) findViewById(R.id.textAzimuth)).setText(Long.toString(Math.round(azimuth)));
+        this.mCompassDial.setRotation((float) (360 - azimuth));
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,7 +61,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
         this.mCompassNiddle = (ImageView) findViewById(R.id.compassNiddle);
 
         this.deviceCompass = new DeviceCompass(this);
-        this.deviceCompass.setOnAzimuthChangedEventListener(this);
+        this.deviceCompass.setOnOrientationChangedEventListener(this);
 
         findViewById(R.id.buttonCamera).setOnClickListener(this);
     }
@@ -86,12 +93,6 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
         //ErrorDialog.newInstance("asdsad").show(getFragmentManager(),"a");
         Intent camera = new Intent(getApplicationContext(), CameraPreviewActivity.class);
         startActivity(camera);
-    }
-
-    @Override
-    public void onAzimuthChanged(double azimuth) {
-        ((TextView) findViewById(R.id.textAzimuth)).setText(Long.toString(Math.round(azimuth)));
-        this.mCompassDial.setRotation((float) (360 - azimuth));
     }
 
     @Override

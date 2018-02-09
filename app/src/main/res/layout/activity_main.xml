@@ -47,134 +47,141 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
         android:paddingLeft="20dp">
 
-        <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Azimuth: "
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryDarkColor" />
+            android:orientation="horizontal"
+            android:paddingLeft="20dp">
 
-        <TextView
-            android:id="@+id/textAzimuth"
-            android:layout_width="wrap_content"
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Azimuth: "
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryDarkColor" />
+
+            <TextView
+                android:id="@+id/textAzimuth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="---"
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryColor" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="---"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryColor" />
+            android:orientation="horizontal"
+            android:paddingLeft="20dp">
 
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Latitude: "
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryDarkColor" />
+
+            <TextView
+                android:id="@+id/textLatitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="---"
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryColor" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="20dp">
+
+            <TextView
+                android:id="@+id/textView4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Longitude: "
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryDarkColor" />
+
+            <TextView
+                android:id="@+id/textLongitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="---"
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryColor" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="20dp">
+
+            <TextView
+                android:id="@+id/textView5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Altitude: "
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryDarkColor" />
+
+            <TextView
+                android:id="@+id/textAltitude"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="---"
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryColor" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="20dp">
+
+            <TextView
+                android:id="@+id/textView6"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accuracy: "
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryDarkColor" />
+
+            <TextView
+                android:id="@+id/textAccuracy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="---"
+                android:textAppearance="@android:style/TextAppearance.Material.Medium"
+                android:textColor="@color/primaryColor" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical|center_horizontal"
+            android:orientation="horizontal"
+            android:paddingTop="20dp">
+
+            <Button
+                android:id="@+id/buttonCamera"
+                style="@android:style/Widget.Material.Button.Colored"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:background="@color/primaryColor"
+                android:text="Start Camera" />
+        </LinearLayout>
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="20dp">
-
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Latitude: "
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryDarkColor" />
-
-        <TextView
-            android:id="@+id/textLatitude"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="---"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryColor" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="20dp">
-
-        <TextView
-            android:id="@+id/textView4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Longitude: "
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryDarkColor" />
-
-        <TextView
-            android:id="@+id/textLongitude"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="---"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryColor" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="20dp">
-
-        <TextView
-            android:id="@+id/textView5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Altitude: "
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryDarkColor" />
-
-        <TextView
-            android:id="@+id/textAltitude"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="---"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryColor" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:paddingLeft="20dp">
-
-        <TextView
-            android:id="@+id/textView6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Accuracy: "
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryDarkColor" />
-
-        <TextView
-            android:id="@+id/textAccuracy"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="---"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium"
-            android:textColor="@color/primaryColor" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical|center_horizontal"
-        android:orientation="horizontal"
-        android:paddingTop="20dp">
-
-        <Button
-            android:id="@+id/buttonCamera"
-            style="@android:style/Widget.Material.Button.Colored"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:background="@color/primaryColor"
-            android:text="Start Camera" />
-    </LinearLayout>
-
 </LinearLayout>
