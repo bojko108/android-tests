@@ -1,13 +1,12 @@
 package com.bojkosoft.bojko108.testgpscam;
-
 import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.hardware.GeomagneticField;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -25,9 +24,18 @@ public class DeviceLocation extends Service implements LocationListener {
     public static final String LOCATION_DISTANCE = "location_distance";
     public static final String CREATE_NOTIFICATION = "create_notification";
 
+    public static final String EXTRA_LATITUDE = "latitude";
+    public static final String EXTRA_LONGITUDE = "longitude";
+    public static final String EXTRA_ALTITUDE = "altitude";
+    public static final String EXTRA_ACCURACY = "accuracy";
+    public static final String EXTRA_TIME = "time";
+    public static final String EXTRA_DECLINATION = "declination";
+
     private LocationManager mLocationManager = null;
     private int mLocationInterval = 1000;
     private float mLocationDistance = 0f;
+
+    private double mDeclination;
 
     private static final int NOTIFICATION_ID = 1886;
     private NotificationManager mNotificationManager;
@@ -83,7 +91,10 @@ public class DeviceLocation extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        this.mDeclination = this.calculateDeclination(location);
+
         DecimalFormat f = new DecimalFormat("##.000000");
+
         this.updateNotification("lat: " + f.format(location.getLatitude()) + "; lon: " + f.format(location.getLongitude()));
         this.broadcastDeviceLocation(location);
     }
@@ -105,10 +116,12 @@ public class DeviceLocation extends Service implements LocationListener {
 
     private void broadcastDeviceLocation(Location location) {
         Intent intent = new Intent(DEVICE_LOCATION);
-        intent.putExtra("latitude", location.getLatitude());
-        intent.putExtra("longitude", location.getLongitude());
-        intent.putExtra("altitude", location.getAltitude());
-        intent.putExtra("accuracy", location.getAccuracy());
+        intent.putExtra(EXTRA_LATITUDE, location.getLatitude());
+        intent.putExtra(EXTRA_LONGITUDE, location.getLongitude());
+        intent.putExtra(EXTRA_ALTITUDE, location.getAltitude());
+        intent.putExtra(EXTRA_ACCURACY, location.getAccuracy());
+        intent.putExtra(EXTRA_TIME, location.getTime());
+        intent.putExtra(EXTRA_DECLINATION, this.mDeclination);
         sendBroadcast(intent);
     }
 
@@ -128,5 +141,10 @@ public class DeviceLocation extends Service implements LocationListener {
                 .setContentText(text);
 
         return builder;
+    }
+
+    public double calculateDeclination(Location location) {
+        GeomagneticField field = new GeomagneticField((float) location.getLatitude(), (float) location.getLongitude(), (float) location.getAltitude(), location.getTime());
+        return field.getDeclination();
     }
 }

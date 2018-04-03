@@ -7,10 +7,11 @@
 * [Add error dialog](#add-error-dialog)
 * [Select directory](#select-directory)
 * [Add line in view](#add-line-in-view)
+* [Custom view](#custom-view)
+* [Vector 3D](#vector3d)
 
 # How to work with Compass
-1. Add `DeviceCompass` class to the activity. The default value for `azimuthStep` is 0 degrees. If set, the azimuth will be returned only if the change
-is bigger than the azimuth step:
+1. Add `DeviceCompass` class to the activity. The default value for `azimuthStep` is 0 degrees. If set, the azimuth (and other orientation angles) will be returned only if the change is bigger than the azimuth step:
 ```java
 private DeviceCompass deviceCompass;
 ...
@@ -19,17 +20,19 @@ this.deviceCompass = new DeviceCompass(this);
 // you can set the azimuth step in degrees:
 this.deviceCompass.setAzimuthStep(5);
 ```
-2. Implement `DeviceCompass.OnAzimuthChangedEventListener` listener in the activity:
+2. Implement `DeviceCompass.OnOrientationChangedEventListener` listener in the activity:
 ```java
-this.deviceCompass.setOnAzimuthChangedEventListener(this);
+this.deviceCompass.setOnOrientationChangedEventListener(this);
 ...
 @Override
-public void onAzimuthChanged(double azimuth) {
+public void onOrientationChanged(float azimuth, float pitch, float roll) {
     // display azimuth value
     ((TextView) findViewById(R.id.textAzimuth)).setText(Long.toString(Math.round(azimuth)));
     
     // rotate image view
     this.mCompassDial.setRotation((float) (360 - azimuth));
+
+    // pitch * -1 - if used in Android.graphics.Camera
 }
 ```
 3. Attach/detach to process. While in background we no longger need to listen for changes to the azimuth value:
@@ -59,8 +62,8 @@ protected void onPause() {
 private void startGPS() {
     registerReceiver(receiver, new IntentFilter(DeviceLocation.DEVICE_LOCATION));
     Intent intent = new Intent(getApplicationContext(), DeviceLocation.class);
-    intent.putExtra(DeviceLocation.LOCATION_INTERVAL, 10000);
-    intent.putExtra(DeviceLocation.LOCATION_DISTANCE, 50f);
+    intent.putExtra(DeviceLocation.LOCATION_INTERVAL, 10000);   // wait atleast 10 seconds
+    intent.putExtra(DeviceLocation.LOCATION_DISTANCE, 50f);     // call on distance changed with 50 meters
     startService(intent);
 }
 
@@ -87,45 +90,48 @@ private BroadcastReceiver receiver = new BroadcastReceiver() {
     public void onReceive(Context context, Intent intent) {
         Bundle bundle = intent.getExtras();
         if (bundle != null) {
-            double latitude = (double) bundle.get("latitude");
-            double longitude = (double) bundle.get("longitude");
-            double altitude = (double) bundle.get("altitude");
-            float accuracy = (float) bundle.get("accuracy");            
+            double latitude = (double) bundle.get(DeviceLocation.EXTRA_LATITUDE);
+            double longitude = (double) bundle.get(DeviceLocation.EXTRA_LONGITUDE);
+            double altitude = (double) bundle.get(DeviceLocation.EXTRA_ALTITUDE);
+            float accuracy = (float) bundle.get(DeviceLocation.EXTRA_ACCURACY);       
         }
     }
 };
 ```
-6. Check GPS permissions:
-3. Check camera permissions:
+6. Available navigation data:
+- `DeviceLocation.EXTRA_LATITUDE` - geographic latitude (WGS84);
+- `DeviceLocation.EXTRA_LONGITUDE` - geographic longitude (WGS84);
+- `DeviceLocation.EXTRA_ALTITUDE` - GPS altitude in meters;
+- `DeviceLocation.EXTRA_ACCURACY` - position accuracy in meters;
+- `DeviceLocation.EXTRA_TIME` - UTC time of this fix, in milliseconds since January 1, 1970
+- `DeviceLocation.EXTRA_DECLINATION` - get magnetic declination for this location in degrees.
+
+7. Check GPS permissions:
 ```java
-private static final int REQUEST_PERMISSION = 1;
-
-private void checkGPSPermissions() {
-
-    //TODO: ask user if he want to turnon the GPS...
-
+private void checkPermissions() {
     int permission = ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
 
     if (permission != PackageManager.PERMISSION_GRANTED) {
         // ask user for permissions
         ActivityCompat.requestPermissions(
                 this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
+                PERMISSIONS,
                 REQUEST_PERMISSION
         );
     }
 }
+```
+
 # How to work with Camera
 1. Add permissions to android manifest:
 ```xml
 <uses-permission android:name="android.permission.CAMERA" />
-
 <uses-feature android:name="android.hardware.camera2.full" />
 ```
 2. Add `CameraPreviewActivity` activity, `CameraFragment` fragment and `AutoFitTextureView` class. You'll also need `layout/activity_camera` and `layout/fragment_camera` xml files.
 - you can add only `CameraFragment` and just add a fragment in your activity:
 ```xml
-<fragment android:name="com.bojkosoft.bojko108.livegeolocator.CameraFragment"
+<fragment android:name="PACKAGE.NAME.CameraFragment"
     android:id="@+id/cameraPreview"
     android:layout_width="match_parent"
     android:layout_height="match_parent" />
@@ -203,8 +209,32 @@ if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
 ```
 # Add confirmation dialog
 
-# Add error dialog
+# Add alert dialog
+1. Add class:
+```java
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.DialogInterface;
 
+public class DialogAlert {
+    public static Dialog create(Activity activity, String message, String title) {
+        title = (title != null ? title : "Alert");
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setMessage(message)
+                .setTitle(title).setCancelable(true)
+                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                    }
+                });
+        return builder.create();
+    }
+}
+```
+2. Use it:
+```java
+DialogAlert.create(this, "Message", "Title").show();
+```
 # Select directory
 ```java
 private void chooseDirectory() {
@@ -247,4 +277,58 @@ protected void onActivityResult(int requestCode, int resultCode, Intent data) {
     app:layout_constraintBottom_toBottomOf="parent"
     app:layout_constraintLeft_toLeftOf="parent"
     app:layout_constraintRight_toRightOf="parent" />
+```
+
+
+# Custom view
+1. Create a custom view class - `DirectionView`.
+2. Add view to layout:
+```xml
+<PACKAGE.NAME.DirectionView
+    android:id="@+id/directionView"
+    android:layout_width="255dp"
+    android:layout_height="259dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintLeft_toLeftOf="parent"
+    app:layout_constraintRight_toRightOf="parent"
+    app:layout_constraintTop_toTopOf="parent" />
+```
+or programmatically:
+```java
+// this - context
+DirectionView view = new DirectionView(this);
+container.addView(view);
+```
+3. The test view - `DirectionView` is only an arrow object, pointing to a location. You can
+update it by calling:
+```java
+directionView = (TargetView) findViewById(R.id.directionView);
+// current direction - can be set to phone view direction in degrees
+// targetDirection - is the bearuing to the target - the desired rotation of DirectionView
+// tilt - phone pitch angle * -1
+directionView.updateRotation(currentDirection, targetDirection, tilt);
+```
+
+# Vector3D
+- http://www.euclideanspace.com/maths/algebra/vectors/applications/normals/index.htm
+- https://introcs.cs.princeton.edu/java/33design/Vector.java.html
+
+# Perspective???
+https://stackoverflow.com/questions/701504/perspective-projection-help-a-noob/701978#701978
+Here's a very general answer. Say the camera's at (`Xc`, `Yc`, `Zc`) and the point you want to project is P = (`X`, `Y`, `Z`). The distance from the camera to the 2D plane onto which you are projecting is `F` (so the equation of the plane is `Z - Zc = F`). The 2D coordinates of P projected onto the plane are (`X'`, `Y'`).
+Then, very simply:
+```
+X' = ((X - Xc) * (F/Z)) + Xc
+Y' = ((Y - Yc) * (F/Z)) + Yc
+```
+If your camera is the origin, then this simplifies to:
+```
+X' = X * (F/Z)
+Y' = Y * (F/Z)
+```
+
+
+When the phone tilt is changed then calculate the camera position:
+```
+camera.rotateX(tilt)        // or tilt * -1?
 ```

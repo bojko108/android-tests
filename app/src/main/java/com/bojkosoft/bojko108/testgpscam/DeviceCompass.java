@@ -10,21 +10,35 @@ import android.view.WindowManager;
 
 public class DeviceCompass implements SensorEventListener {
 
-    public interface OnAzimuthChangedEventListener {
-        void onAzimuthChanged(double azimuth);
+    public interface OnOrientationChangedEventListener {
+        void onOrientationChanged(float azimuth, float pitch, float roll);
     }
 
     private Context mContext;
 
+    // magnetic declination for BG can be set to +5 degrees
+    private double mDeclination = 5.0;
+    private double mAzimuthStep;
+    private double mOldAzimuth;
+
     private SensorManager mSensorManager;
     private Sensor mMagnetometer;
 
-    private OnAzimuthChangedEventListener mOnAzimuthChangedEventListener;
+    private OnOrientationChangedEventListener mOnOrientationChangedEventListener;
 
     public DeviceCompass(Context context) {
         this.mContext = context;
         this.mSensorManager = (SensorManager) this.mContext.getSystemService(Context.SENSOR_SERVICE);
         this.mMagnetometer = this.mSensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+    }
+
+    public void setAzimuthStep(double azimuthStep) {
+        if (azimuthStep < 0) azimuthStep = 0;
+        this.mAzimuthStep = azimuthStep;
+    }
+
+    public void setDeclination(double declination) {
+        this.mDeclination = declination;
     }
 
     public void startListening() {
@@ -35,8 +49,8 @@ public class DeviceCompass implements SensorEventListener {
         this.mSensorManager.unregisterListener(this);
     }
 
-    public void setOnOrientationChangedEventListener(OnAzimuthChangedEventListener eventListener) {
-        this.mOnAzimuthChangedEventListener = eventListener;
+    public void setOnOrientationChangedEventListener(OnOrientationChangedEventListener eventListener) {
+        this.mOnOrientationChangedEventListener = eventListener;
     }
 
     @Override
@@ -51,32 +65,36 @@ public class DeviceCompass implements SensorEventListener {
 
         boolean isFlat = this.isDeviceFlat(event.values.clone());
 
+        double azimuth = Double.NaN;
+
         if (!isFlat) {
             SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_X, SensorManager.AXIS_Z, remappedMatrix);
             SensorManager.getOrientation(remappedMatrix, orientation);
-        } else {
-            switch (rot) {
-                case Surface.ROTATION_0:
-                    // No orientation change, use default coordinate system
-                    SensorManager.getOrientation(rotationMatrix, orientation);
-                    break;
-                case Surface.ROTATION_90:
-                    SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedMatrix);
-                    SensorManager.getOrientation(remappedMatrix, orientation);
-                    break;
-                case Surface.ROTATION_180:
-                    SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_MINUS_X, SensorManager.AXIS_MINUS_Y, remappedMatrix);
-                    SensorManager.getOrientation(remappedMatrix, orientation);
-                    break;
-                case Surface.ROTATION_270:
-                    // tilt to right
-                    SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_MINUS_Y, SensorManager.AXIS_X, remappedMatrix);
-                    SensorManager.getOrientation(remappedMatrix, orientation);
-                    break;
-                default:
-                    SensorManager.getOrientation(rotationMatrix, orientation);
-                    break;
-            }
+
+            azimuth = (Math.toDegrees(orientation[0]) + 360) % 360;
+        }
+
+        switch (rot) {
+            case Surface.ROTATION_0:
+                // No orientation change, use default coordinate system
+                SensorManager.getOrientation(rotationMatrix, orientation);
+                break;
+            case Surface.ROTATION_90:
+                SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_Y, SensorManager.AXIS_MINUS_X, remappedMatrix);
+                SensorManager.getOrientation(remappedMatrix, orientation);
+                break;
+            case Surface.ROTATION_180:
+                SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_MINUS_X, SensorManager.AXIS_MINUS_Y, remappedMatrix);
+                SensorManager.getOrientation(remappedMatrix, orientation);
+                break;
+            case Surface.ROTATION_270:
+                // tilt to right
+                SensorManager.remapCoordinateSystem(rotationMatrix, SensorManager.AXIS_MINUS_Y, SensorManager.AXIS_X, remappedMatrix);
+                SensorManager.getOrientation(remappedMatrix, orientation);
+                break;
+            default:
+                SensorManager.getOrientation(rotationMatrix, orientation);
+                break;
         }
 
         // orientation[0]: Azimuth
@@ -89,20 +107,27 @@ public class DeviceCompass implements SensorEventListener {
         //
         // The range of values is -π to π.
 
-        double azimuth = (Math.toDegrees(orientation[0]) + 360) % 360;
-        //if (azimuth < 0) azimuth = 360 - (azimuth * -1);
+        if (Double.isNaN(azimuth)) {
+            azimuth = (Math.toDegrees(orientation[0]) + 360) % 360;
+        }
 
-        double pitch = Math.toDegrees(orientation[1]);
-        double roll = Math.toDegrees(orientation[2]);
+        azimuth += this.mDeclination;
 
-        // broadcast orientation values
-        if (this.mOnAzimuthChangedEventListener != null) {
-            this.mOnAzimuthChangedEventListener.onAzimuthChanged(azimuth);
+        if (Math.abs(this.mOldAzimuth - azimuth) > this.mAzimuthStep) {
+            this.mOldAzimuth = azimuth;
+            // broadcast orientation values
+            if (this.mOnOrientationChangedEventListener != null) {
+                this.mOnOrientationChangedEventListener.onOrientationChanged((float) azimuth, (float) Math.toDegrees(orientation[1]), (float) Math.toDegrees(orientation[2]));
+            }
         }
     }
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    private double mod(double a, double b) {
+        return a % b;
     }
 
     private boolean isDeviceFlat(float[] values) {

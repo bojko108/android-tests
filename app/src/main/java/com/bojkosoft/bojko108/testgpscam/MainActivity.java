@@ -2,6 +2,7 @@ package com.bojkosoft.bojko108.testgpscam;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -14,7 +15,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements View.OnClickListener, DeviceCompass.OnAzimuthChangedEventListener {
+public class MainActivity extends Activity implements View.OnClickListener, DeviceCompass.OnOrientationChangedEventListener {
     // GPS Permissions
     private static final int REQUEST_PERMISSION = 1;
     private static String[] PERMISSIONS = {
@@ -33,17 +34,16 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
         public void onReceive(Context context, Intent intent) {
             Bundle bundle = intent.getExtras();
             if (bundle != null) {
-                //((TextView) findViewById(R.id.textLatitude)).setText(bundle.get("latitude").toString());
-                //((TextView) findViewById(R.id.textLongitude)).setText(bundle.get("longitude").toString());
-                ((TextView) findViewById(R.id.textAltitude)).setText(bundle.get("altitude").toString());
-                ((TextView) findViewById(R.id.textAccuracy)).setText(bundle.get("accuracy").toString());
+                //((TextView) findViewById(R.id.textLatitude)).setText(bundle.get(DeviceLocation.EXTRA_LATITUDE).toString());
+                //((TextView) findViewById(R.id.textLongitude)).setText(bundle.get(DeviceLocation.EXTRA_LONGITUDE).toString());
+                ((TextView) findViewById(R.id.textAltitude)).setText(bundle.get(DeviceLocation.EXTRA_ALTITUDE).toString());
+                ((TextView) findViewById(R.id.textAccuracy)).setText(bundle.get(DeviceLocation.EXTRA_ACCURACY).toString());
             }
         }
     };
 
-
     @Override
-    public void onAzimuthChanged(double azimuth) {
+    public void onOrientationChanged(float azimuth, float pitch, float roll) {
         ((TextView) findViewById(R.id.textAzimuth)).setText(Long.toString(Math.round(azimuth)));
         this.mCompassDial.setRotation((float) (360 - azimuth));
     }
@@ -64,6 +64,7 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
         this.deviceCompass.setOnOrientationChangedEventListener(this);
 
         findViewById(R.id.buttonCamera).setOnClickListener(this);
+        findViewById(R.id.buttonAr).setOnClickListener(this);
     }
 
     @Override
@@ -71,6 +72,9 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
         switch (v.getId()) {
             case R.id.buttonCamera:
                 startCamera();
+                break;
+            case R.id.buttonAr:
+                startAr();
                 break;
         }
     }
@@ -91,8 +95,14 @@ public class MainActivity extends Activity implements View.OnClickListener, Devi
 
     private void startCamera() {
         //ErrorDialog.newInstance("asdsad").show(getFragmentManager(),"a");
+
         Intent camera = new Intent(getApplicationContext(), CameraPreviewActivity.class);
         startActivity(camera);
+    }
+
+    private void startAr() {
+        Intent ar = new Intent(getApplicationContext(), ARActivity.class);
+        startActivity(ar);
     }
 
     @Override
